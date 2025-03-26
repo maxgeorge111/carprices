@@ -1,4 +1,4 @@
-# carprices.github.io
+Predict the price of a car
 
 This project uses data that is publicly accessible via the AutoTrader website.
 
