@@ -125,26 +125,18 @@ body {
 
 /* BG */
 #bg {
-  -moz-transition: opacity 2s ease-in-out;
-  -webkit-transition: opacity 2s ease-in-out;
-  -ms-transition: opacity 2s ease-in-out;
-  transition: opacity 2s ease-in-out;
   height: 100%;
   left: 0;
-  opacity: 0.375;
+  opacity: 1;
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1; }
   #bg div {
-    -moz-transition: opacity 3s ease;
-    -webkit-transition: opacity 3s ease;
-    -ms-transition: opacity 3s ease;
-    transition: opacity 3s ease;
     background-size: cover;
     height: 100%;
     left: 0;
-    opacity: 0;
+    opacity: 1;
     position: absolute;
     top: 0;
     visibility: hidden;
@@ -446,7 +438,67 @@ ul.icons {
 /* Form */
 form {
   margin: 0 0 2em 0; }
+
   form .message {
+    text-decoration: none;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transform: scale(1.05);
+    padding: 15px;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0;
+    display: block;
+    border-radius: 8px;
+    max-width: 500px;
+    margin-top: 15px;
+    height: 2.5em;
+  }
+
+  form .message:before {
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      margin-right: 0.5em;
+  }
+
+  form .message.visible {
+      transform: scale(1);
+      opacity: 1;
+  }
+
+  form .message.success {
+      color: #155724;
+      background-color: #d4edda;
+      border-left: 5px solid #1cb495;
+  }
+
+  form .message.success:before {
+      content: '\f00c'; /* Checkmark icon */
+  }
+
+  form .message.failure {
+      color: #721c24;
+      background-color: #f8d7da;
+      border-left: 5px solid #ff2361;
+  }
+
+  form .message.failure:before {
+      content: '\f119'; /* Sad face icon */
+  }
+
+  /* Styling for the bullet list inside the message */
+  form .message ul {
+      margin: 10px 0 0 20px;
+      padding: 0;
+  }
+
+  form .message ul li {
+      font-size: 16px;
+      list-style-type: disc;
+      margin-bottom: 5px;
+  }
+
+
+  /* form .message {
     text-decoration: none;
     -moz-transition: opacity 0.2s ease-in-out, -moz-transform 0.2s ease-in-out;
     -webkit-transition: opacity 0.2s ease-in-out, -webkit-transform 0.2s ease-in-out;
@@ -485,7 +537,7 @@ form {
     form .message.failure {
       color: #ff2361; }
       form .message.failure:before {
-        content: '\f119'; }
+        content: '\f119'; } */
 
 label {
   color: #fff;
@@ -563,7 +615,7 @@ label {
     transform: scale(1); } }
 
 input[type="text"],
-input[type="password"],
+input[type="number"],
 input[type="email"],
 select,
 textarea {
@@ -590,13 +642,13 @@ textarea {
   text-decoration: none;
   width: 100%; }
   input[type="text"]:invalid,
-  input[type="password"]:invalid,
+  input[type="number"]:invalid,
   input[type="email"]:invalid,
   select:invalid,
   textarea:invalid {
     box-shadow: none; }
   input[type="text"]:focus,
-  input[type="password"]:focus,
+  input[type="number"]:focus,
   input[type="email"]:focus,
   select:focus,
   textarea:focus {
@@ -624,7 +676,7 @@ select {
     display: none; }
 
 input[type="text"],
-input[type="password"],
+input[type="number"],
 input[type="email"],
 select {
   height: 2.75em; }
@@ -806,7 +858,7 @@ button,
   display: flex;
   position: relative; }
   #signup-form input[type="text"],
-  #signup-form input[type="password"],
+  #signup-form input[type="number"],
   #signup-form input[type="email"] {
     width: 18em; }
   #signup-form > * {
@@ -820,7 +872,7 @@ button,
       -ms-flex-direction: column;
       flex-direction: column; }
       #signup-form input[type="type"],
-      #signup-form input[type="password"],
+      #signup-form input[type="number"],
       #signup-form input[type="email"] {
         width: 100%; }
       #signup-form > * {
