@@ -1,109 +1,118 @@
-/*
-	Eventually by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-*/
+const apiEndpoint = "https://3ttgjnibkj.execute-api.us-east-1.amazonaws.com/DEV";
 
-(function() {
+$(document).ready(function () {
+	// Fetch makes once on page load
+	// Make selection
+	fetch(apiEndpoint + "/makes")
+	.then(res => res.json())
+	.then(makes => {
+		const options = makes.map(m => ({ id: m, text: m }));
+		$('#make').select2({
+			placeholder: 'Select Make',
+			data: options,
+			dropdownAutoWidth: true,
+			closeOnSelect: true,
+			allowClear: true,
+			minimumInputLength: 0
+		});
+	});
 
-	"use strict";
+	// Focus search on open
+	$('#make').on('select2:open', function () {
+		// Give focus to the internal search field
+		document.querySelector('.select2-container--open .select2-search__field').focus();
+	});
 
-	var	$body = document.querySelector('body');
+	// Close select behaviour for unfocusing
+	$(document).on('click', function (e) {
+		if (!$(e.target).closest('.select2-container').length) {
+			$('#make').select2('close');
+		}
+	});
 
-	// Methods/polyfills.
+	// Listen for when a make is selected
+	$('#make').on('change', function () {
+		const selectedMake = $(this).val();  // Get the selected make
 
-	// classList | (c) @remy | github.com/remy/polyfills | rem.mit-license.org
-	!function(){function t(t){this.el=t;for(var n=t.className.replace(/^\s+|\s+$/g,"").split(/\s+/),i=0;i<n.length;i++)e.call(this,n[i])}function n(t,n,i){Object.defineProperty?Object.defineProperty(t,n,{get:i}):t.__defineGetter__(n,i)}if(!("undefined"==typeof window.Element||"classList"in document.documentElement)){var i=Array.prototype,e=i.push,s=i.splice,o=i.join;t.prototype={add:function(t){this.contains(t)||(e.call(this,t),this.el.className=this.toString())},contains:function(t){return-1!=this.el.className.indexOf(t)},item:function(t){return this[t]||null},remove:function(t){if(this.contains(t)){for(var n=0;n<this.length&&this[n]!=t;n++);s.call(this,n,1),this.el.className=this.toString()}},toString:function(){return o.call(this," ")},toggle:function(t){return this.contains(t)?this.remove(t):this.add(t),this.contains(t)}},window.DOMTokenList=t,n(Element.prototype,"classList",function(){return new t(this)})}}();
-
-	// canUse
-	window.canUse=function(p){if(!window._canUse)window._canUse=document.createElement("div");var e=window._canUse.style,up=p.charAt(0).toUpperCase()+p.slice(1);return p in e||"Moz"+up in e||"Webkit"+up in e||"O"+up in e||"ms"+up in e};
-
-	// window.addEventListener
-	(function(){if("addEventListener"in window)return;window.addEventListener=function(type,f){window.attachEvent("on"+type,f)}})();
-
-	(function() {
-		// Vars.
-		var	$wrapper, $bg;
-
-		// Create BG wrapper, BGs.
-		$wrapper = document.createElement('div');
-		$wrapper.id = 'bg';
-		$body.appendChild($wrapper);
-
-		// Create BG.
-		$bg = document.createElement('div');
-		$bg.style.backgroundImage = 'url("images/bg01.jpg")';
-		$bg.style.backgroundPosition = 'center';
-		$wrapper.appendChild($bg);
-
-		// Main loop.
-		$bg.classList.add('visible');
-		$bg.classList.add('top');
-	})();
-
-	// Predict form
-	(function() {
-		// Vars.
-		var $form = document.querySelectorAll('#signup-form')[0],
-			$submit = document.querySelectorAll('#signup-form input[type="submit"]')[0],
-			$message;
-
-		// Bail if addEventListener isn't supported.
-		if (!('addEventListener' in $form))
+		// If no make is selected, clear and disable the model dropdown
+		if (!selectedMake) {
+			$('#model').val(null).trigger('change').prop('disabled', true);
 			return;
+		}
 
-		// Message.
-		$message = document.createElement('span');
-		$message.classList.add('message');
-		$form.appendChild($message);
+		// Enable the model select
+		$('#model').prop('disabled', false);
 
-		$message._show = function(type, text) {
-			$message.innerHTML = text;
-			$message.classList.remove('failure', 'success');
-			$message.classList.add(type, 'visible');
+		// Fetch models for the selected make
+		fetch(`${apiEndpoint}/models?make=${encodeURIComponent(selectedMake)}`)
+		.then(res => res.json())
+		.then(models => {
+			const options = models.map(m => ({ id: m, text: m }));
+			options.unshift({ id: '', text: '' });
+
+			$('#model').empty().select2({
+				placeholder: 'Select Model',
+				data: options,
+				dropdownAutoWidth: true,
+				closeOnSelect: true,
+				allowClear: true,
+				minimumInputLength: 0
+			}).val(null);
+		})
+		.catch(error => {
+			console.error('Error fetching models:', error);
+		});
+	});
+
+	// Focus search on open
+	$('#model').on('select2:open', function () {
+		document.querySelector('.select2-container--open .select2-search__field').focus();
+	});
+
+	// Close select behaviour for unfocusing
+	$(document).on('click', function (e) {
+		if (!$(e.target).closest('.select2-container').length) {
+			$('#model').select2('close');
+		}
+	});
+
+	// On form submit
+	$('#car-form').on('submit', function (e) {
+		e.preventDefault();
+
+		const payload = {
+			make: $('#make').val(),
+			model: $('#model').val(),
+			year: $('#year').val(),
+			mileage: $('#mileage').val()
 		};
 
-		$message._hide = function() {
-			$message.classList.remove('visible');
-		};
+		$('#response-box').hide();
 
-		// Events
-		$form.addEventListener("submit", function(event) {
-			event.stopPropagation();
-			event.preventDefault();
+		fetch(apiEndpoint + "/predict", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(payload)
+		})
+		.then(res => res.json().then(data => ({ status: res.status, body: data })))
+		.then(({ status, body }) => {
+			const box = $('#response-box');
+			box.removeClass('alert-success alert-danger');
 
-			$message._hide();
-			
-			let make = document.getElementById("make").value;
-			let model = document.getElementById("model").value;
-			let year = document.getElementById("year").value;
-			let mileage = document.getElementById("mileage").value;
-
-			if (!make || !model || !year || !mileage) {
-				$message._show('failure', 'Please fill in all fields.');
-				return;
+			if (status === 200) {
+				box.addClass('alert-success');
+				box.text(body.body);
+			} else {
+				box.addClass('alert-danger');
+				box.text(body.error || "Something went wrong.");
 			}
 
-			$submit.disabled = true;
-
-			fetch("https://3ttgjnibkj.execute-api.us-east-1.amazonaws.com/DEV/predict", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({ make, model, year: parseInt(year), mileage: parseInt(mileage) })
-			})
-			.then(response => response.json())
-			.then(data => {
-				$submit.disabled = false;
-				
-				if (data.error) {
-					$message._show('failure', 'Something went wrong. Please try again.');
-				} else {
-					$message._show('success', data.body);
-				}
-			})
-			.catch(error => console.error("Error:", error));
+			box.fadeIn();
+		})
+		.catch(err => {
+			$('#response-box').removeClass().addClass('alert alert-danger').text("Request failed.").fadeIn();
 		});
-	})();
-})();
+	});
+});
